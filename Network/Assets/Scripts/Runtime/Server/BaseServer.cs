@@ -1,9 +1,9 @@
-using System.Collections;
 using UnityEngine;
-
 using Unity.Collections;
 using Unity.Networking.Transport;
-using System.Net.Sockets;
+using System.Net;
+
+
 
 /// <summary>
 /// https://www.youtube.com/watch?v=S3jFXcY0UNo
@@ -24,6 +24,7 @@ public class BaseServer : MonoBehaviour
     {
         //init the driver
         driver = NetworkDriver.Create();
+
         NetworkEndpoint endpoint = NetworkEndpoint.AnyIpv4; //Define who can connect to us (AnyIpv4 is anyone basicly)
         endpoint.Port = 5522; //Can be any number
 
@@ -39,12 +40,12 @@ public class BaseServer : MonoBehaviour
         //init the connection list
         connections = new NativeList<NetworkConnection>(4, Allocator.Persistent); //Number of max players that can connect, network connections are never destroyed
     }
+
     public virtual void ShutDown()
     {
         driver.Dispose();
         connections.Dispose();
     }
-
 
     public virtual void UpdateServer()
     {
@@ -87,8 +88,12 @@ public class BaseServer : MonoBehaviour
             {
                 if(cmd == NetworkEvent.Type.Data)
                 {
-                    uint number = stream.ReadByte();
-                    Debug.Log("Got " + number + " from the client");
+                    OnData(stream);
+
+                    /*byte opCode = stream.ReadByte();
+                    FixedString512Bytes chatMessage = stream.ReadFixedString512(); 
+                    Debug.Log("Got " + opCode + " as operation code");
+                    Debug.Log("Got " + chatMessage + " as chat message");*/
                 }
                 else if(cmd == NetworkEvent.Type.Disconnect)
                 {
@@ -97,5 +102,48 @@ public class BaseServer : MonoBehaviour
                 }
             }
         }
+    }
+
+    public virtual void OnData(DataStreamReader stream) 
+    {
+        NetMessage msg = null;
+        var opCode = (OpCode)stream.ReadByte(); //recieve a stream of data and then read the first byte
+        switch (opCode)
+        {
+            case OpCode.CHAT_MESSAGE:
+                msg = new Net_ChatMessage(stream);
+                break;
+            case OpCode.PLAYER_POSITION:
+                msg = new Net_PlayerPosition(stream);
+                break;
+
+            default:
+                Debug.Log("Message recieved had no OpCode");
+                break;
+
+        }
+
+        msg.RecievedOnServer(this);
+    }
+
+    public virtual void Broadcast(NetMessage msg)
+    {
+        for (int i = 0; i < connections.Length; i++)
+        {
+            if (connections[i].IsCreated)
+            {
+                SendToClient(connections[i], msg);
+            }
+        }
+    }
+
+    public virtual void SendToClient(NetworkConnection connection, NetMessage msg)
+    {
+        DataStreamWriter writer;
+        driver.BeginSend(connection, out writer);
+
+        msg.Serialize(ref writer);
+
+        driver.EndSend(writer);
     }
 }

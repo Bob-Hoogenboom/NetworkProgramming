@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Unity.Collections;
 using Unity.Networking.Transport;
 using System.Net;
@@ -11,14 +11,15 @@ using System.Net;
 
 public class BaseServer : MonoBehaviour
 {
+    public ushort port = 5530;
+
     public NetworkDriver driver;
     protected NativeList<NetworkConnection> connections;
 
-#if UNITY_EDITOR
+
     private void Start() { Init(); }
     private void Update() { UpdateServer(); }
     private void OnDestroy() { ShutDown(); }
-#endif
 
     public virtual void Init()
     {
@@ -26,19 +27,22 @@ public class BaseServer : MonoBehaviour
         driver = NetworkDriver.Create();
 
         NetworkEndpoint endpoint = NetworkEndpoint.AnyIpv4; //Define who can connect to us (AnyIpv4 is anyone basicly)
-        endpoint.Port = 5522; //Can be any number
+        endpoint.Port = 5530; //Can be any number
 
-        if(driver.Bind(endpoint) != 0)
+        if (driver.Bind(endpoint) != 0)
         {
-            Debug.Log("There was an error binding to port " + endpoint.Port);
+            Debug.LogError("❌ Failed to bind to port " + endpoint.Port);
         }
         else
         {
-            driver.Listen(); //Defining that we are a server and we started
+            driver.Listen();
+            Debug.Log("Server is now listening on port " + endpoint.Port);
         }
 
         //init the connection list
         connections = new NativeList<NetworkConnection>(4, Allocator.Persistent); //Number of max players that can connect, network connections are never destroyed
+
+        Debug.Log($"Server binding to: {endpoint}");
     }
 
     public virtual void ShutDown()

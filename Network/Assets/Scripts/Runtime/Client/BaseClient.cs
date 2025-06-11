@@ -8,26 +8,37 @@ using System.Net.Sockets;
 public class BaseClient : MonoBehaviour
 {
     public string ipAdress = "127.0.0.1";
-    public ushort port = 8000;
+    public ushort port = 5530;
     public NetworkDriver driver;
     protected NetworkConnection connection;
 
-#if UNITY_EDITOR
+    private float reconnectTimer = 0f;
+    private float reconnectInterval = 3f;
+    public bool isTryingToConnect = false;
+    public bool isConnected = false;
+
+
     private void Start() { Init(); }
     private void Update() { UpdateServer(); }
     private void OnDestroy() { ShutDown(); }
-#endif
+
 
     public virtual void Init()
     {
-        //init the driver
         driver = NetworkDriver.Create();
         connection = default(NetworkConnection);
+        TryConnect();
+    }
 
-        NetworkEndpoint endpoint = NetworkEndpoint.LoopbackIpv4;
-        endpoint.Port = 5522; //should be the same portnumber as the server
-
-        connection = driver.Connect(endpoint);
+    private void TryConnect()
+    {
+        if (driver.IsCreated)
+        {
+            var endpoint = NetworkEndpoint.Parse(ipAdress, port);
+            connection = driver.Connect(endpoint);
+            isTryingToConnect = true;
+            Debug.Log($"Trying to connect to server at {ipAdress}:{port}");
+        }
     }
 
     public virtual void ShutDown()
@@ -38,6 +49,18 @@ public class BaseClient : MonoBehaviour
     public virtual void UpdateServer()
     {
         driver.ScheduleUpdate().Complete(); //derive from job system to cleanup connection
+
+
+        // Only try to reconnect if not connected or already trying
+        if (!isConnected && !isTryingToConnect)
+        {
+            reconnectTimer += Time.deltaTime;
+            if (reconnectTimer >= reconnectInterval)
+            {
+                reconnectTimer = 0f;
+                TryConnect();
+            }
+        }
 
         CheckAlive();
         UpdateMessagePump();    //Parse all the messages the client is sending us and applying that
@@ -61,6 +84,8 @@ public class BaseClient : MonoBehaviour
             if (cmd == NetworkEvent.Type.Connect)
             {
                 Debug.Log("Client got connected to the server");
+                isTryingToConnect = false;
+                isConnected = true;
             }
             else if(cmd == NetworkEvent.Type.Data)
             {
@@ -73,6 +98,8 @@ public class BaseClient : MonoBehaviour
             {
                 Debug.Log("Client got disconnected from server");
                 connection = default(NetworkConnection);
+                isTryingToConnect = false;
+                isConnected = false;
             }
         }
     }

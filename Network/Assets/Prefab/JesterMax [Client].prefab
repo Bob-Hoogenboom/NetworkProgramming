@@ -75,7 +75,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ipAdress: 127.0.0.1
-  port: 8000
+  port: 5530
 --- !u!114 &3472601482425827806
 MonoBehaviour:
   m_ObjectHideFlags: 0

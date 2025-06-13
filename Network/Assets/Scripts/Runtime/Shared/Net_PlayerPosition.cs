@@ -58,5 +58,6 @@ public class Net_PlayerPosition : NetMessage
     public override void RecievedOnClient()
     {
         Debug.Log($"CLIENT:: {playerID} ::Pos {positionX}, {positionY}, {positionZ}");
+
     }
 }

@@ -12,7 +12,8 @@ public class NetUpdatePosition : MonoBehaviour
         Server = FindObjectOfType<BaseServer>();
         if (Server == null)
         {
-            Debug.LogWarning("No Server object was found. Updates will 'NOT' be broadcasted");
+            //Debug.LogWarning("No Server object was found. Updates will 'NOT' be broadcasted");
+            Destroy(this);
         }
     }
 
@@ -20,15 +21,6 @@ public class NetUpdatePosition : MonoBehaviour
     {
         if (Time.time - lastSend > 1.0f)
         {
-            Server = FindObjectOfType<BaseServer>();
-            if (Server == null)
-            {
-                Server = FindObjectOfType<BaseServer>();
-
-                Debug.LogWarning("Again, No Server object was found. Updates will 'NOT' be broadcasted");
-                return;
-            }
-
             Vector3 pos = transform.position;
             Net_PlayerPosition ps = new Net_PlayerPosition(1, pos.x, pos.y, pos.z);
             Server.Broadcast(ps);

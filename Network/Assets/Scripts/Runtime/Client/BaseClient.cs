@@ -106,15 +106,17 @@ public class BaseClient : MonoBehaviour
 
     public virtual void OnData(DataStreamReader stream)
     {
-        NetMessage msg = null;
         var opCode = (OpCode)stream.ReadByte(); //recieve a stream of data and then read the first byte
         switch (opCode)
         {
             case OpCode.CHAT_MESSAGE:
-                msg = new Net_ChatMessage(stream);
+                Net_ChatMessage chat = new Net_ChatMessage(stream);
+                chat.RecievedOnClient();
                 break;
             case OpCode.PLAYER_POSITION:
-                msg = new Net_PlayerPosition(stream);
+                Net_PlayerPosition pos = new Net_PlayerPosition(stream);
+                pos.RecievedOnClient();
+                transform.position = new Vector3(pos.positionX, pos.positionY, pos.positionZ);
                 break;
 
             default:
@@ -122,8 +124,6 @@ public class BaseClient : MonoBehaviour
                 break;
 
         }
-
-        msg.RecievedOnClient();
     }
 
     public virtual void SendToServer(NetMessage msg)

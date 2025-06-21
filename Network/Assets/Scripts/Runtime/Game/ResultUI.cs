@@ -1,6 +1,5 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.Jobs;
 
 /// <summary>
 /// Sample ResultUI, can be changed or connected to a json or save string later
@@ -11,7 +10,6 @@ public class ResultUI : MonoBehaviour
     [SerializeField] private GameObject resultWindow;
     [SerializeField] private TMP_Text whiteScoreTXT;
     [SerializeField] private TMP_Text blackScoreTXT;
-
     [Space]
     [SerializeField] private int whiteScore = 0;
     [SerializeField] private int blackScore = 0;
@@ -19,11 +17,13 @@ public class ResultUI : MonoBehaviour
     private void OnEnable()
     {
         GameEvents.gameOverEvent += OnGameOver;
+        GameEvents.rematchEvent += Rematch;
     }
 
     private void OnDisable()
     {
         GameEvents.gameOverEvent -= OnGameOver;
+        GameEvents.rematchEvent -= Rematch;
     }
 
     private void Start()
@@ -74,12 +74,20 @@ public class ResultUI : MonoBehaviour
     public void ResetGame()
     {
         ChessBoard board = FindObjectOfType<ChessBoard>();
+        board.OnRematch();
         board.ResetBoard();
         resultWindow.SetActive (false);
     }
 
     public void ExitGame()
     {
-        Application.Quit();
+        ChessBoard board = FindObjectOfType<ChessBoard>();
+        board.ToMenu();
     }
+
+    public void Rematch()
+    {
+
+    }
+
 }

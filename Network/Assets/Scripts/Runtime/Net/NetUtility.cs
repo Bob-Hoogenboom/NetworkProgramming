@@ -26,7 +26,7 @@ public static class NetUtility
             case OpCode.WELCOME:
                 msg = new NetWelcome(stream);
                 break;
-/*            case OpCode.START_GAME:
+            case OpCode.START_GAME:
                 msg = new NetStartGame(stream);
                 break;
             case OpCode.MAKE_MOVE:
@@ -34,7 +34,7 @@ public static class NetUtility
                 break;
             case OpCode.REMATCH:
                 msg = new NetRematch(stream);
-                break;*/
+                break;
             default:
                 Debug.LogError("Message recieved had no OpCode");
                 break;

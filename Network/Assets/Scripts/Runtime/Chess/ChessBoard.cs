@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Networking.Transport;
 using UnityEngine;
 
 /// <summary>
@@ -35,6 +36,9 @@ public class ChessBoard : MonoBehaviour
 
     private bool _isWhiteTurn;
 
+    private int _playerCount = -1;
+    private int _currentTeam = -1;
+
 
     private void Awake()
     {
@@ -45,6 +49,8 @@ public class ChessBoard : MonoBehaviour
 
         SpawnAllPieces();
         PositionAllPieces();
+
+        RegisterEvent();
     }
 
     private void Update()
@@ -400,5 +406,32 @@ public class ChessBoard : MonoBehaviour
         }
         return false;
     }
+    #endregion
+
+    # region Events
+    private void RegisterEvent()
+    {
+        NetUtility.S_WELCOME += OnWelcomeServer;
+    }
+
+    private void UnregisterEvents()
+    {
+
+    }
+
+    //Server
+    private void OnWelcomeServer(NetMessage msg, NetworkConnection cnn)
+    {
+        //Client has connected, assign a team and return a message
+        NetWelcome nw = msg as NetWelcome;
+
+        //assign team
+        nw.assignedTeam = ++_playerCount;
+
+        // vack toi the client
+        Server.instance.SendToClient(cnn, nw);
+    }
+
+    //Client
     #endregion
 }

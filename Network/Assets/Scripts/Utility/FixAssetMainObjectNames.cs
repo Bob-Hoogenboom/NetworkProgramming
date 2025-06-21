@@ -1,4 +1,4 @@
-
+#if UNITY_EDITOR
 using System.IO;
 using UnityEngine;
 using UnityEditor;
@@ -144,3 +144,4 @@ public static class FixAssetMainObjectNames
     }
 
 }   // class FixAssetMainObjectNames
+#endif

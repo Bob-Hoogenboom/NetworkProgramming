@@ -64,7 +64,7 @@ public class Server : MonoBehaviour
     {
         if (!_isActive) return;
 
-        //KeepAlive();
+       KeepAlive();
 
         driver.ScheduleUpdate().Complete();
         CleanupConnections();
@@ -74,7 +74,11 @@ public class Server : MonoBehaviour
     
     private void KeepAlive()
     {
-
+        if(Time.time - _lastKeepAlive > _keepAliveTick)
+        { 
+            _lastKeepAlive = Time.time;
+            Broadcast(new NetKeepAlive());
+        }
     }
 
     //Do we still have a reference to a connection that doesn't excist anymore?
@@ -111,7 +115,7 @@ public class Server : MonoBehaviour
             {
                 if(cmd == NetworkEvent.Type.Data)
                 {
-                    //NetUtility.OnData(stream, _connections[i], this.);
+                    NetUtility.OnData(stream, _connections[i], this);
                 }
                 else if(cmd == NetworkEvent.Type.Disconnect)
                 {
@@ -127,11 +131,11 @@ public class Server : MonoBehaviour
 
     #region Server Specific Methods
     //send data to specific client
-    private void SendToClient(NetworkConnection connection, NetMessage msg) 
+    public void SendToClient(NetworkConnection connection, NetMessage msg) 
     {
         DataStreamWriter writer;
         driver.BeginSend(connection, out writer);
-        //msg.Serialize(ref writer);
+        msg.Serialize(ref writer);
         driver.EndSend(writer);
     }
 

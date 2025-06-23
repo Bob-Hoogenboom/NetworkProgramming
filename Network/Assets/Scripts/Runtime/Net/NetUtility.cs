@@ -9,7 +9,7 @@ public enum OpCode
     WELCOME = 2,
     START_GAME = 3,
     MAKE_MOVE = 4,
-    REMATCH = 5,
+    REMATCH = 5
 }
 
 public static class NetUtility

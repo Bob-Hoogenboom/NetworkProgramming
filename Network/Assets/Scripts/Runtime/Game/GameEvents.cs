@@ -7,12 +7,4 @@ public static class GameEvents
     {
         gameOverEvent?.Invoke(winner);
     }
-
-    public delegate void RequestRematch();
-    public static event RequestRematch rematchEvent;
-
-    public static void TriggerRematch()
-    {
-        rematchEvent?.Invoke();
-    }
 }

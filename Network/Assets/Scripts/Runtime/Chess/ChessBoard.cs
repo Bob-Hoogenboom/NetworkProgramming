@@ -1,7 +1,8 @@
 using System.Collections.Generic;
+using TMPro;
 using Unity.Networking.Transport;
-using UnityEditor.PackageManager;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// This script is attached to the chessboard Model and handles the generation of tiles and selecting those tiles
@@ -36,13 +37,24 @@ public class ChessBoard : MonoBehaviour
     private Vector2Int _currentHover;
 
     private bool _isWhiteTurn;
+    
+    [Header("User Interface")]
+    [SerializeField] private GameObject resultWindow;
+    [SerializeField] private TMP_Text whiteScoreTXT;
+    [SerializeField] private TMP_Text blackScoreTXT;
+    [SerializeField] private GameObject rematchIndicator;
+    [SerializeField] private GameObject leaveIndicator;
+    [SerializeField] private Button rematchBTN;
+    [Space]
+    [SerializeField] private int whiteScore = 0;
+    [SerializeField] private int blackScore = 0;
+
 
     [Header("Multiplayer")]
     private int _playerCount = -1;
     private int _currentTeam = -1;
 
     private bool _localGame = true;
-    private Transform _rematchIndicator;
     private bool[] _playerRematch = new bool[2];
 
 
@@ -52,6 +64,7 @@ public class ChessBoard : MonoBehaviour
     {
         _cam = Camera.main;
         _isWhiteTurn = true;
+        resultWindow.SetActive(false);
 
         GernerateGrid(tileSize, tileCount);
 
@@ -307,61 +320,22 @@ public class ChessBoard : MonoBehaviour
         // Do any internal logic here, e.g., stop game, etc.
 
         // Fire the event to notify others
-        GameEvents.TriggerGameOver(winner);
+        DisplayWinning(winner);
     }
 
-    public void OnRematch()
+    public void GameReset()
     {
-        if (_localGame)
-        {
-            NetRematch wrm = new NetRematch();
-            wrm.teamId = 0;
-            wrm.wantRematch = 1;
+        //UI
+        rematchBTN.interactable = true;
 
-            Client.instance.SendToServer(wrm);
+        rematchIndicator.SetActive(false);
+        leaveIndicator.SetActive(false);
+        resultWindow.SetActive(false);
 
-
-            NetRematch brm = new NetRematch();
-            brm.teamId = 1;
-            brm.wantRematch = 1;
-
-            Client.instance.SendToServer(brm);
-        }
-        else
-        {
-            NetRematch rm = new NetRematch();
-            rm.teamId = _currentTeam;
-            rm.wantRematch = 1;
-
-            Client.instance.SendToServer(rm);
-        }
-
-    }
-
-    public void ToMenu()
-    {
-        NetRematch rm = new NetRematch();
-        rm.teamId = _currentTeam;
-        rm.wantRematch = 0;
-
-        Client.instance.SendToServer(rm);
-
-        ResetBoard();
-        GameUI.instance.OnLeaveFromGameMenu();
-
-        Client.instance.Shutdown();
-        Server.instance.Shutdown();
-
-        _playerCount = -1;
-        _currentTeam = -1;
-    }
-
-    public void ResetBoard()
-    {
+        //references
         _currentlyDragging = null;
 
         _playerRematch[0] = _playerRematch[1] = false;
-        _availableMoves = new List<Vector2Int>();
 
         for (int x = 0; x < tileCount.x; x++)
         {
@@ -465,8 +439,8 @@ public class ChessBoard : MonoBehaviour
         if (_currentlyDragging)
         {
             _currentlyDragging = null;
-            RemoveHighlightTiles();
         }
+        RemoveHighlightTiles();
 
         //TODO specialMoves Checkmate*
     }
@@ -603,12 +577,21 @@ public class ChessBoard : MonoBehaviour
         //activate UI
         if(rm.teamId != _currentTeam)
         {
-            GameEvents.TriggerRematch();
+            if(rm.wantRematch == 1)
+            {
+                rematchIndicator.SetActive(true);
+            }
+            else
+            {
+                leaveIndicator.SetActive(true);
+                rematchBTN.interactable = false;
+            }
+
         }
 
         if (_playerRematch[0] && _playerRematch[1])
         {
-            ResetBoard();
+            GameReset();
         }
 
     }
@@ -616,7 +599,93 @@ public class ChessBoard : MonoBehaviour
     //local
     private void OnSetLocalGame(bool value)
     {
+        _playerCount = -1;
+        _currentTeam = -1;
+
         _localGame = value;
+    }
+    #endregion
+
+    #region User Interface
+    private void DisplayWinning(int winner)
+    {
+        resultWindow.SetActive(true);
+
+        //make a nice window for displaying a win
+        //TODO make it better because this is not networked so its better to just say which team won
+        if (winner == 0)
+        {
+            whiteScore++;
+
+            whiteScoreTXT.text = $"White Won This Round!\nScore: {whiteScore}";
+            blackScoreTXT.text = $"Black Score:\n{blackScore}";
+
+            //if you are white display that YOU have won
+
+            Debug.Log("White wins! White Score: " + whiteScore);
+        }
+        else if (winner == 1)
+        {
+            blackScore++;
+
+            whiteScoreTXT.text = $"White Score:\n{whiteScore}";
+            blackScoreTXT.text = $"Black Won This Round!\nScore: {blackScore}";
+
+            //if you are black display that YOU have won
+
+            Debug.Log("Black wins! Black Score: " + blackScore);
+        }
+
+    }
+
+    public void OnRematchBTN()
+    {
+        if (_localGame)
+        {
+            NetRematch wrm = new NetRematch();
+            wrm.teamId = 0;
+            wrm.wantRematch = 1;
+
+            Client.instance.SendToServer(wrm);
+
+
+            NetRematch brm = new NetRematch();
+            brm.teamId = 1;
+            brm.wantRematch = 1;
+
+            Client.instance.SendToServer(brm);
+        }
+        else
+        {
+            NetRematch rm = new NetRematch();
+            rm.teamId = _currentTeam;
+            rm.wantRematch = 1;
+
+            Client.instance.SendToServer(rm);
+        }
+    }
+
+    public void OnMenuBTN()
+    {
+        NetRematch rm = new NetRematch();
+        rm.teamId = _currentTeam;
+        rm.wantRematch = 0;
+
+        Client.instance.SendToServer(rm);
+
+        GameReset();
+        GameUI.instance.OnLeaveFromGameMenu();
+
+        Invoke("ShutDownRelay", 1.0f);
+
+        _playerCount = -1;
+        _currentTeam = -1;
+    }
+
+    private void ShutDownRelay()
+    {
+        Client.instance.Shutdown();
+        Server.instance.Shutdown();
     }
     #endregion
 }

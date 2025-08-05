@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Runtime.Serialization.Json;
 using UnityEngine;
 
 public enum ChessPieceType
@@ -46,6 +47,12 @@ public class ChessPiece : MonoBehaviour
         r.Add(new Vector2Int(4, 4));
 
         return r;
+    }
+
+    public virtual SpecialMove GetSpecialMoves(ref ChessPiece[,] borad, ref List<Vector2Int[]> moveList, ref List<Vector2Int> availableMoves)
+    {
+        return SpecialMove.NONE;
+
     }
 
     public virtual void SetPosition(Vector3 pos, bool force = false)

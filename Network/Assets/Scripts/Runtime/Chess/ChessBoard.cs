@@ -7,8 +7,22 @@ using UnityEngine.UI;
 /// <summary>
 /// This script is attached to the chessboard Model and handles the generation of tiles and selecting those tiles
 /// </summary>
+
+//TODO Move enum to Chess Utility Class
+public enum SpecialMove
+{
+    NONE = 0,
+    ENPASSANT = 1,
+    CASTELING = 2,
+    PROMOTION = 3
+}
+
 public class ChessBoard : MonoBehaviour
 {
+    [Header("References")]
+    private Camera _cam;
+    private SpecialMove _specialMove;
+
     [Header("Prefabs & Materials")]
     [SerializeField] private Material tileMat;
     [Space]
@@ -30,9 +44,9 @@ public class ChessBoard : MonoBehaviour
     private List<ChessPiece> _defeatedWhite = new List<ChessPiece>();
     private List<ChessPiece> _defeatedBlack = new List<ChessPiece>();
 
+    private List<Vector2Int[]> _moveList = new List<Vector2Int[]>();    //En Passant Moves
     private List<Vector2Int> _availableMoves = new List<Vector2Int>();
 
-    private Camera _cam;
     private GameObject[,] _tiles;
     private Vector2Int _currentHover;
 
@@ -109,6 +123,8 @@ public class ChessBoard : MonoBehaviour
 
                         //get list of where you can move towards
                         _availableMoves = _currentlyDragging.GetAvailableMoves(ref _chessPieces, tileCount.x, tileCount.y);
+                        //get a list of special moves
+                        _specialMove = _currentlyDragging.GetSpecialMoves(ref _chessPieces, ref _moveList, ref _availableMoves); 
 
                         HighlightTiles();
                     }
@@ -332,8 +348,10 @@ public class ChessBoard : MonoBehaviour
         leaveIndicator.SetActive(false);
         resultWindow.SetActive(false);
 
-        //references
+        // Field Resets
         _currentlyDragging = null;
+        _availableMoves.Clear();
+        _moveList.Clear();
 
         _playerRematch[0] = _playerRematch[1] = false;
 
@@ -366,6 +384,18 @@ public class ChessBoard : MonoBehaviour
         PositionAllPieces();
         _isWhiteTurn = true; //white always starts
     }
+    #endregion
+
+    #region Specialmoves
+
+    private void ProcessSpecialMoves()
+    {
+        if (_specialMove == SpecialMove.ENPASSANT)
+        {
+
+        }
+    }
+
     #endregion
 
     #region Operations
@@ -429,12 +459,15 @@ public class ChessBoard : MonoBehaviour
         PositionOnePiece(new Vector2Int(x,y), true);
 
         _isWhiteTurn = !_isWhiteTurn; //Toggle boolean to swap turns
+        //TODO specialMoves*
+        _moveList.Add(new Vector2Int[] { previousPos, new Vector2Int(x, y) });
+
+        ProcessSpecialMoves();
+
         if (_localGame)
         {
             _currentTeam = (_currentTeam == 0) ? 1 : 0;
         }
-
-        //TODO specialMoves*
 
         if (_currentlyDragging)
         {
@@ -457,6 +490,7 @@ public class ChessBoard : MonoBehaviour
         return false;
     }
     #endregion
+
 
     # region Events
     private void RegisterEvent()
@@ -605,6 +639,7 @@ public class ChessBoard : MonoBehaviour
         _localGame = value;
     }
     #endregion
+
 
     #region User Interface
     private void DisplayWinning(int winner)

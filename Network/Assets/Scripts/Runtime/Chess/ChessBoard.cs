@@ -392,7 +392,36 @@ public class ChessBoard : MonoBehaviour
     {
         if (_specialMove == SpecialMove.ENPASSANT)
         {
+            Vector2Int[] newMove = _moveList[_moveList.Count - 1];
+            Vector2Int[] targetPawnPos = _moveList[_moveList.Count - 2];
 
+            ChessPiece myPawn = _chessPieces[newMove[1].x, newMove[1].y];
+            ChessPiece opponentPawn = _chessPieces[targetPawnPos[1].x, targetPawnPos[1].y];
+
+            if (myPawn.currentX == opponentPawn.currentX)
+            {
+                if (myPawn.currentY == opponentPawn.currentY - 1 || myPawn.currentY == opponentPawn.currentY + 1)
+                {
+                    if(opponentPawn.team == 0)
+                    {
+                        _defeatedWhite.Add(opponentPawn);
+                        opponentPawn.SetScale(Vector3.one * deathSize);
+                        opponentPawn.SetPosition(new Vector3(8 * tileSize, 0, -1 * tileSize)
+                            + new Vector3(tileSize / 2, yOffset, tileSize / 2)
+                            + (Vector3.forward * defeatedPawnMargin) * _defeatedWhite.Count);
+                    }
+                    else
+                    {
+                        _defeatedBlack.Add(opponentPawn);
+                        opponentPawn.SetScale(Vector3.one * deathSize);
+                        opponentPawn.SetPosition(new Vector3(-1 * tileSize, 0, 8 * tileSize)
+                            + new Vector3(tileSize / 2, yOffset, tileSize / 2)
+                            + (Vector3.back * defeatedPawnMargin) * _defeatedBlack.Count);
+                    }
+
+                    _chessPieces[opponentPawn.currentX, opponentPawn.currentY] = null;
+                }
+            }
         }
     }
 

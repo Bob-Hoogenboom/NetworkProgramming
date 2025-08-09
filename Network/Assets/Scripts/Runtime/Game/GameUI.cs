@@ -26,7 +26,7 @@ public class GameUI : MonoBehaviour
     [Space]
     private int startMenu = Animator.StringToHash("StartMenu");
     private int onlineMenuHash = Animator.StringToHash("OnlineMenu");
-    private int hotsMenuHash = Animator.StringToHash("HostMenu");
+    private int hostMenuHash = Animator.StringToHash("HostMenu");
     private int inGameHash = Animator.StringToHash("InGame");
 
 
@@ -90,7 +90,7 @@ public class GameUI : MonoBehaviour
         server.Init(8007);
         client.Init("127.0.0.1", 8007);
 
-        anim.SetTrigger(hotsMenuHash);
+        anim.SetTrigger(hostMenuHash);
     }
 
     public void OnOnlineConnectBTN()

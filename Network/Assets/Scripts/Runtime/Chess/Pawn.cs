@@ -89,6 +89,12 @@ public class Pawn : ChessPiece
             }
         }
 
+        //Promotion (Queening*)
+        if((team == 0 && currentY == 6) || team == 1 && currentY == 1)
+        {
+            return SpecialMove.PROMOTION;
+        }
+
         return SpecialMove.NONE;
     }
 }

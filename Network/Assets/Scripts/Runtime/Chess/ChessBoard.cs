@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// This script is attached to the chessboard Model and handles the generation of tiles and selecting those tiles
+/// TODO 'Bug' where a rematch in localgame does not restart correctly because currentteam is black but white starts
 /// </summary>
 
 //TODO Move enum to Chess Utility Class
@@ -420,6 +421,75 @@ public class ChessBoard : MonoBehaviour
                     }
 
                     _chessPieces[opponentPawn.currentX, opponentPawn.currentY] = null;
+                }
+            }
+        }
+
+        if (_specialMove == SpecialMove.PROMOTION)
+        {
+            Vector2Int[] lastMove = _moveList[_moveList.Count - 1];
+            ChessPiece targetPawn = _chessPieces[lastMove[1].x, lastMove[1].y];
+
+            if(targetPawn.type == ChessPieceType.PAWN) // a little double cuz a pawn is the only one with promotion logic
+            {
+                if(targetPawn.team == 0 && lastMove[1].y == 7)
+                {
+                    ChessPiece promoQueen = SpawnOnePiece(ChessPieceType.QUEEN, 0);
+                    promoQueen.transform.position = _chessPieces[lastMove[1].x, lastMove[1].y].transform.position;
+                    Destroy(_chessPieces[lastMove[1].x, lastMove[1].y].gameObject); //delete pawn
+                    _chessPieces[lastMove[1].x, lastMove[1].y] = promoQueen;
+                    PositionOnePiece(new Vector2Int(lastMove[1].x, lastMove[1].y));
+                }
+                if (targetPawn.team == 1 && lastMove[1].y == 0)
+                {
+                    ChessPiece promoQueen = SpawnOnePiece(ChessPieceType.QUEEN, 1);
+                    promoQueen.transform.position = _chessPieces[lastMove[1].x, lastMove[1].y].transform.position;
+                    Destroy(_chessPieces[lastMove[1].x, lastMove[1].y].gameObject); //delete pawn
+                    _chessPieces[lastMove[1].x, lastMove[1].y] = promoQueen;
+                    PositionOnePiece(new Vector2Int(lastMove[1].x, lastMove[1].y));
+                }
+            }
+        }
+
+        if (_specialMove == SpecialMove.CASTELING)
+        {
+            Vector2Int[] lastmove = _moveList[_moveList.Count - 1];
+
+            //left rook
+            if (lastmove[1].x == 2 )
+            {
+                if(lastmove[1].y == 0) //white side
+                {
+                    ChessPiece lRook = _chessPieces[0, 0];
+                    _chessPieces[3, 0] = lRook;
+                    PositionOnePiece(new Vector2Int(3,0));
+                    _chessPieces[0, 0] = null;
+                }
+                else if(lastmove[1].y == 7) //black side
+                {
+                    ChessPiece lRook = _chessPieces[0, 7];
+                    _chessPieces[3, 7] = lRook; 
+                    PositionOnePiece(new Vector2Int(3, 7));
+                    _chessPieces[0, 7] = null;
+                }
+            }
+
+            //right rook
+            else if (lastmove[1].x == 6)
+            {
+                if (lastmove[1].y == 0) //white side
+                {
+                    ChessPiece lRook = _chessPieces[7, 0];
+                    _chessPieces[5, 0] = lRook;
+                    PositionOnePiece(new Vector2Int(5, 0));
+                    _chessPieces[7, 0] = null;
+                }
+                else if (lastmove[1].y == 7) //black side
+                {
+                    ChessPiece lRook = _chessPieces[7, 7];
+                    _chessPieces[5, 7] = lRook;
+                    PositionOnePiece(new Vector2Int(5, 7));
+                    _chessPieces[7, 7] = null;
                 }
             }
         }

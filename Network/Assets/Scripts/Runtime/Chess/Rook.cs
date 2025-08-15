@@ -23,8 +23,8 @@ public class Rook : ChessPiece
                 if (board[currentX, i].team != team)
                 {
                     moves.Add(new Vector2Int(currentX, i));
-                    break;
                 }
+                break;
             }
         }
 
@@ -40,8 +40,8 @@ public class Rook : ChessPiece
                 if (board[currentX, i].team != team)
                 {
                     moves.Add(new Vector2Int(currentX, i));
-                    break;
                 }
+                break;
             }
         }
 
@@ -57,8 +57,8 @@ public class Rook : ChessPiece
                 if (board[i, currentY].team != team)
                 {
                     moves.Add(new Vector2Int(i, currentY));
-                    break;
                 }
+                break;
             }
         }
 
@@ -74,8 +74,8 @@ public class Rook : ChessPiece
                 if (board[i, currentY].team != team)
                 {
                     moves.Add(new Vector2Int(i, currentY));
-                    break;
                 }
+                break;
             }
         }
 

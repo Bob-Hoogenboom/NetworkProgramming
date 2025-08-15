@@ -25,6 +25,7 @@ public class Bishop : ChessPiece
                 {
                     moves.Add(new Vector2Int(x, y));
                 }
+                break;
             }
         }
 
@@ -42,6 +43,7 @@ public class Bishop : ChessPiece
                 {
                     moves.Add(new Vector2Int(x, y));
                 }
+                break;
             }
         }
 
@@ -59,6 +61,7 @@ public class Bishop : ChessPiece
                 {
                     moves.Add(new Vector2Int(x, y));
                 }
+                break;
             }
         }
 
@@ -76,6 +79,7 @@ public class Bishop : ChessPiece
                 {
                     moves.Add(new Vector2Int(x, y));
                 }
+                break;
             }
         }
 
